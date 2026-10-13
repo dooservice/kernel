@@ -67,15 +67,8 @@ jobs:
 
             ## Using this release
 
-            Update `[tool.uv.sources]` in your `agent` and `orchestrator` repos:
+            In the `[tool.uv.sources]` of an application built on the kernel:
 
             ```toml
-            dooservice-sdk       = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-sdk",       tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-models    = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-models",    tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-db-agent  = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-db-agent",  tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-docker    = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-docker",    tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-dns       = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-dns",       tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-s3        = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-s3",        tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-protocol  = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-protocol",  tag = "${{ steps.tag.outputs.version }}" }
-            dooservice-transport = { git = "https://github.com/dooservice/core", subdirectory = "packages/dooservice-transport", tag = "${{ steps.tag.outputs.version }}" }
+            dooservice-kernel = { git = "https://github.com/dooservice/kernel", tag = "${{ steps.tag.outputs.version }}" }
             ```
