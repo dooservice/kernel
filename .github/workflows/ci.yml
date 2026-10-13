@@ -9,13 +9,26 @@ jobs:
   check:
     name: Lint, types and tests
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: kernel
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U postgres" --health-interval 2s --health-retries 20
+      redis:
+        image: redis:7-alpine
+        ports: ["6379:6379"]
+    env:
+      KERNEL_TEST_POSTGRES: postgresql://postgres:kernel@127.0.0.1:5432
+      KERNEL_TEST_REDIS: redis://127.0.0.1:6379/0
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
       - run: uv python install 3.13
-      - run: uv sync --frozen
+      - run: uv sync --frozen --all-extras
       - run: uv run ruff check src tests
       - run: uv run basedpyright src
       - run: uv run pytest -q

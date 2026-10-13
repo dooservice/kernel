@@ -6,6 +6,7 @@ import msgspec
 from tortoise import Tortoise, connections
 from tortoise.migrations.api.migrate import migrate
 
+from .catalog import TableCatalog
 from .db import APP_LABEL, DatabaseEngine
 
 log = logging.getLogger(__name__)
@@ -30,11 +31,7 @@ class MigrationRunner:
         self.baseline = baseline
 
     async def table_exists(self, table_name: str) -> bool:
-        connection = connections.get("default")
-        rows = await connection.execute_query_dict(
-            "SELECT name FROM sqlite_master WHERE type='table' AND name=?", [table_name]
-        )
-        return bool(rows)
+        return await TableCatalog(connections.get("default")).has(table_name)
 
     async def needs_baseline(self) -> bool:
         if self.baseline is None:

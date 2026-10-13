@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import AsyncIterator
+from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
 from typing import ClassVar
 
 from fastapi import APIRouter, FastAPI
@@ -92,3 +92,32 @@ async def test_readiness_answers_with_the_boundary_that_is_down(running: tuple[F
     assert ready.status_code == 200
     assert down.status_code == 503
     assert down.json()["code"] == "queue_down"
+
+
+class Ledger(Module):
+    name = "ledger"
+
+    def __init__(self) -> None:
+        self.balanced = True
+
+    def health_checks(self) -> Mapping[str, Callable[[], Awaitable[bool]]]:
+        return {"balance": self.balance}
+
+    async def balance(self) -> bool:
+        return self.balanced
+
+
+async def test_readiness_names_each_check_and_which_one_fails() -> None:
+    ledger = Ledger()
+    config = Config(session=SessionConfig(secret="s"))
+    config.database.url = "sqlite://:memory:"
+    builder = ApplicationBuilder(config, [ledger], use_generated_schemas=True)
+    app = builder.build()
+    async with builder.lifespan(app), AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+        ready = await client.get("/health/ready")
+        ledger.balanced = False
+        failing = await client.get("/health/ready")
+
+    assert ready.json()["checks"] == {"database": "ok", "ledger.balance": "ok"}
+    assert failing.status_code == 503
+    assert (failing.json()["code"], failing.json()["params"]) == ("not_ready", {"failing": "ledger.balance"})

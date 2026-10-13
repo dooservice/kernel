@@ -10,6 +10,7 @@ show-fixes = true
 respect-gitignore = true
 
 exclude = [
+    "tests/shop/migrations/*.py",
     ".git",
     ".venv",
     ".ruff_cache",

@@ -10,7 +10,8 @@ import dooservice_kernel
 KERNEL = Path(dooservice_kernel.__file__).parent
 ALLOWED = {
     "dooservice_kernel", "fastapi", "starlette", "pydantic", "pydantic_core", "email_validator",
-    "msgspec", "tortoise", "itsdangerous", "bcrypt", "nacl",
+    "msgspec", "tortoise", "itsdangerous", "bcrypt", "nacl", "cyclopts",
+    "prometheus_client", "opentelemetry", "redis", "httpx", "pytest",
 }
 
 

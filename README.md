@@ -45,14 +45,65 @@ class Module:
     orm_model_modules: Sequence[str]        # the Tortoise models it owns
     config_sections: Sequence[type]         # the configuration it reads
 
+    provides: Sequence[type]                # the ports it offers others
+    requires: Sequence[type]                # the ports it needs
+
     def listeners(self, app) -> Sequence[Listener]: ...      # background work: start() / stop()
-    async def on_startup(self, app) -> None: ...             # publish ports on app.state
+    async def on_startup(self, app) -> None: ...             # register the ports it provides
     def subscriptions(self) -> Mapping[type, Handler]: ...   # the events it acts on
+    def health_checks(self) -> Mapping[str, Check]: ...      # what /health/ready asks of it
+    def commands(self) -> Sequence[Callable]: ...            # its commands on the command line
 ```
 
-Modules boot in the order the application lists them, so a lower module can publish a
-port on `app.state` that a higher one reads. Two applications built from the same modules
-never share a router.
+Two applications built from the same modules never share a router.
+
+### Ports with a type, and the boot order worked out
+
+A module says which ports it `provides` and which it `requires`, and asks for them by
+type instead of by a name on `app.state`:
+
+```python
+class PlanLimits(Protocol):
+    def projects(self) -> int: ...
+
+
+class BillingModule(Module):
+    name = "billing"
+    provides = (PlanLimits,)
+
+    async def on_startup(self, app) -> None:
+        app.state.ports.provide(PlanLimits, StripeLimits())
+
+
+class ProjectsModule(Module):
+    name = "projects"
+    requires = (PlanLimits,)
+    # later: app.state.ports.get(PlanLimits).projects()
+```
+
+The kernel boots a module after every module that provides what it requires, whatever
+order the application lists them in. **A requirement nobody provides, two modules that
+require each other, or a provider that forgot to register its port all stop the boot**
+with the names involved. A `default=True` implementation gives way to the real one a
+later module provides.
+
+### Modules as plugins
+
+A package offers its modules under an entry point, and the application loads every
+installed one:
+
+```toml
+[project.entry-points."dooservice_kernel.modules"]
+shop = "shop.module:ShopModule"
+```
+
+```python
+modules = ModuleDiscovery().installed()
+```
+
+`[modules]` in the configuration picks which run, by name, without touching code:
+`enabled = ["shop", "ledger"]` keeps only those, `disabled = ["ledger"]` takes one out,
+and a name that matches no module is refused.
 
 ### Each module brings its own configuration
 
@@ -82,7 +133,16 @@ currency = "PEN"
 ```
 
 The module reads it with `config.section(ShopConfig)`, and a table missing from the file
-comes with its defaults. Adding a module never means touching the kernel's configuration.
+comes with its defaults.
+
+**The environment overrides any value and secrets come from files**, so one file serves
+every deployment and no secret lives in it. With `Config.load(kinds, env_prefix="SHOP")`:
+
+```sh
+SHOP__SHOP__CURRENCY=PEN                       # [shop] currency = "PEN"
+SHOP__SERVER__PORT=8080                        # read as TOML: a number
+SHOP__SESSION__SECRET__FILE=/run/secrets/key   # [session] secret = the file's contents
+``` Adding a module never means touching the kernel's configuration.
 The file is checked strictly: **a table no module declares, or an unknown key inside one,
 stops the service at boot** instead of being ignored. A misspelt section is found the
 moment you deploy, not the day its value matters.
@@ -115,6 +175,21 @@ the rest to skip theirs. In the dooservice orchestrator this is how a deleted pr
 cleaned from every module's tables, and how a daily reconcile clears whatever a deletion
 missed.
 
+**Events that must not be lost go through the outbox.** `Outbox.add(event)` writes the
+event in the same transaction as the change it announces, and the outbox module's relay
+publishes it afterwards: either both happen or neither does, and a process that stops
+in between delivers it when it comes back. Include `OutboxModule()` among the modules and
+`OutboxModule.table()` in one of your migrations.
+
+**Events reach every process** with an event bridge. `RedisEventBridge` (the `redis`
+extra) is a boundary and a bridge at once: an event published in one process reaches the
+handlers of all of them, and never the same process twice.
+
+```python
+bridge = RedisEventBridge("redis://cache:6379/0")
+ApplicationBuilder(config, modules, boundaries=[bridge], bridge=bridge)
+```
+
 ### Boundaries
 
 A boundary is what the service cannot work without: a message bus, a queue, a cache. It is
@@ -132,6 +207,40 @@ The kernel opens every boundary before the database and closes it after, and
 `/health/ready` asks each one whether it is still there. A service that answers HTTP while
 its bus is gone looks healthy and does nothing; with boundaries a monitor sees it, with the
 error code the boundary chose.
+
+### Health that says what fails
+
+`/health/ready` answers the state of each check by name, the database, every boundary
+and every check a module declares, so a monitor sees which one fails and not only that
+one does:
+
+```json
+{"status": "ready", "checks": {"database": "ok", "redis events": "ok", "ledger.balance": "ok"}}
+```
+
+While a boundary is down it answers with that boundary's own error; while only a
+module's check fails, `503` with `not_ready` and the checks that fail.
+
+### Work on a timer
+
+`Periodic` is the listener for a sweep, a reconcile, a relay: it waits `first_after`
+before the first run, runs every `every` seconds with a little jitter so processes do
+not run in step, logs a run that fails and keeps going.
+
+```python
+def listeners(self, app):
+    return (Periodic("reconcile", self.reconcile, every=86400, first_after=600),)
+```
+
+### A command line with each module's commands
+
+```python
+command_line = CommandLine("shop", modules, load_config)
+command_line()            # shop check-config · shop ledger rebuild --since 2026-01-01
+```
+
+Each module's `commands()` go under its name, and `check-config` reads the configuration
+the way the service would, every module's section included, and stops.
 
 ### A profile per application
 
@@ -157,7 +266,8 @@ no module has to.
 
 ### Database and migrations
 
-Tortoise ORM with its native migrations, run at startup. A **baseline** lets a database
+Tortoise ORM with its native migrations, run at startup, on **SQLite or PostgreSQL** (the
+`postgres` extra); the tests run against both. A **baseline** lets a database
 that predates migrations adopt them: when its sentinel table is there and the migrations
 table is not, the first migration is stamped as applied without running any SQL, so
 existing data is never touched. Tests can skip migrations and generate the schema
@@ -187,7 +297,22 @@ Categories ready to subclass: `BadRequestError` 400, `UnauthorizedError` 401,
 
 Every request gets an id, returned as `X-Request-Id`, written in every log line it causes
 and in every problem document, so a user's screenshot of an error leads straight to the
-logs. Background work can carry a job id the same way.
+logs. Background work can carry a job id the same way. With `[server] log_format = "json"`
+each line is one JSON object, for whatever collects the logs.
+
+### Metrics and traces
+
+Extensions the application passes to the builder, each with its extra:
+
+```python
+ApplicationBuilder(config, modules, extensions=[Metrics(), Tracing()])
+```
+
+- `Metrics` (the `metrics` extra) serves `/metrics` for Prometheus: requests by method,
+  route template and status, their duration, and whether each boundary is ready. A route
+  is counted by its template, so ids do not make one series each.
+- `Tracing` (the `tracing` extra) makes every request an OpenTelemetry span; where spans
+  go is OpenTelemetry's own configuration.
 
 ### Security primitives
 
@@ -197,7 +322,8 @@ logs. Background work can carry a job id the same way.
   two ciphers of one secret cannot read each other. Values sealed before the cipher existed
   are recognised and passed through, so a column can be encrypted gradually.
 - `OtpGenerator` and `TokenGenerator`: one-time codes and URL-safe tokens.
-- `Throttle`: how many attempts per key in a window, for passwords and codes.
+- `Throttle`: how many attempts per key in a window, for passwords and codes, kept in
+  memory; `RedisThrottle` (the `redis` extra) shares the counts between processes.
 
 ### Request field types
 
@@ -205,6 +331,21 @@ Annotated types that check a value before any function sees it, each refusing wi
 code: `EmailAddress` (trimmed, lowered, checked), `DnsLabel`, `CustomDomain`,
 `TimeZoneName`, `Password`, `DisplayName`, `OtpCode`, `LanguageCode`, `StorageEndpoint`
 (https only) and more. Plain string rules, no regular expressions.
+
+### Testing a module in a few lines
+
+`KernelHarness` (the `testing` extra) builds the app with your modules, an in-memory
+database with the schema generated and the lifespan running, and gives you a client.
+Its pytest plugin hands it over as the `kernel_harness` fixture:
+
+```python
+async def test_orders(kernel_harness) -> None:
+    bus = FakeBoundary("bus")
+    async with kernel_harness([ShopModule()], sections=[ShopConfig(currency="PEN")], boundaries=[bus]) as shop:
+        assert (await shop.client.get("/api/orders")).status_code == 200
+        bus.up = False
+        assert (await shop.client.get("/health/ready")).status_code == 503
+```
 
 ### It stays generic
 
@@ -232,12 +373,22 @@ app = builder.build()                # serve it with uvicorn
 `app.state` also carries `config`, `registry`, `events`, `cookie_signer` and
 `password_hasher`.
 
+## Extras
+
+| Extra | Brings |
+|---|---|
+| `postgres` | PostgreSQL through asyncpg |
+| `redis` | `RedisEventBridge` and `RedisThrottle` |
+| `metrics` | `Metrics` for Prometheus |
+| `tracing` | `Tracing` with OpenTelemetry |
+| `testing` | `KernelHarness`, `FakeBoundary` and the pytest plugin |
+
 ## Limits
 
-- **SQLite only, for now**: the baseline check reads `sqlite_master`. The other databases
-  Tortoise supports need that check made portable.
-- **One process.** `Throttle` keeps its counts in memory and events are delivered in
-  process; several workers would each have their own.
+- **SQLite and PostgreSQL.** MySQL is answered by the table check but not tested.
+- **Delivery between processes is at most once** over the Redis bridge; what must not be
+  lost goes through the outbox, which is at least once, so its handlers must not mind
+  seeing an event twice.
 - **Young.** It is 0.x: the module contract and the profile may still change between minor
   versions, and the changelog says how.
 
@@ -253,7 +404,7 @@ Applications depend on it by tag, as the dooservice orchestrator does:
 
 ```toml
 [tool.uv.sources]
-dooservice-kernel = { git = "https://github.com/dooservice/kernel", tag = "0.1.1" }
+dooservice-kernel = { git = "https://github.com/dooservice/kernel", tag = "0.2.0" }
 ```
 
 ## Contributing and security

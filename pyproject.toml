@@ -14,11 +14,22 @@ dependencies = [
     "itsdangerous>=2.2",
     "bcrypt>=5",
     "pynacl>=1.6",
+    "cyclopts>=4.22",
 ]
 
 [project.urls]
 Homepage   = "https://dooservice.sh"
 Repository = "https://github.com/dooservice/kernel"
+
+[project.optional-dependencies]
+postgres = ["asyncpg>=0.30"]
+metrics = ["prometheus-client>=0.21"]
+tracing = ["opentelemetry-instrumentation-fastapi>=0.50b0"]
+redis = ["redis>=5.2"]
+testing = ["httpx>=0.28", "pytest>=9"]
+
+[project.entry-points.pytest11]
+dooservice_kernel = "dooservice_kernel.pytest_plugin"
 
 [build-system]
 requires = ["hatchling"]
@@ -44,3 +55,4 @@ typeCheckingMode = "standard"
 asyncio_mode = "auto"
 testpaths    = ["tests"]
 addopts      = ["--import-mode=importlib"]
+pythonpath   = ["tests"]

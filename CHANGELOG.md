@@ -2,6 +2,37 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.2.0] — 2026-10-13
+
+### Added
+- **PostgreSQL** (the `postgres` extra): migrations and the baseline check work on SQLite
+  and PostgreSQL, and the tests run against both.
+- **Ports with a type and the boot order worked out**: `Module.provides` and `requires`,
+  `app.state.ports.provide()` and `get()`. A requirement nobody provides, a cycle, or a
+  provider that did not register its port stops the boot.
+- **Modules as plugins**: `ModuleDiscovery` loads those offered under the
+  `dooservice_kernel.modules` entry points, and `[modules] enabled` / `disabled` picks
+  which run.
+- **A command line**: `CommandLine` puts each module's `commands()` under its name and
+  adds `check-config`.
+- **Configuration from the environment**: `PREFIX__SECTION__KEY` overrides a value, read as
+  TOML, and `PREFIX__SECTION__KEY__FILE` reads a secret from a file.
+- **Observability**: `[server] log_format = "json"`; `Metrics` (Prometheus, the `metrics`
+  extra) and `Tracing` (OpenTelemetry, the `tracing` extra) as extensions passed to the
+  builder.
+- **Reliable events**: the outbox (`OutboxModule`, `Outbox.add`) delivers at least once
+  what was written with the change it announces; `RedisEventBridge` carries events
+  between processes; `RedisThrottle` shares attempt counts.
+- **Health that says what fails**: `/health/ready` lists every check by name, and modules
+  add their own with `health_checks()`.
+- **Work on a timer**: `Periodic`.
+- **Testing**: `KernelHarness`, `FakeBoundary` and the `kernel_harness` pytest fixture (the
+  `testing` extra).
+
+### Changed
+- The kernel's own sections live in `sections.py`; `config` still exports them.
+- `ApplicationBuilder` takes `extensions` and `bridge`.
+
 ## [0.1.1] — 2026-10-13
 
 ### Changed

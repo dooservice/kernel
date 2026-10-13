@@ -8,7 +8,7 @@ help: ## Show this help
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
 
 install: ## Install the package and its dev tools
-	uv sync
+	uv sync --all-extras
 
 lint: ## Ruff
 	uv run ruff check src tests
