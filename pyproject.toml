@@ -3,6 +3,7 @@ name = "dooservice-kernel"
 version = "0.1.0"
 description = "A kernel for modular FastAPI services: modules, their configuration, events, database and migrations"
 requires-python = ">=3.13"
+license = "Apache-2.0"
 dependencies = [
     "fastapi>=0.136",
     "pydantic>=2.13",
@@ -14,6 +15,10 @@ dependencies = [
     "bcrypt>=5",
     "pynacl>=1.6",
 ]
+
+[project.urls]
+Homepage   = "https://dooservice.sh"
+Repository = "https://github.com/dooservice/kernel"
 
 [build-system]
 requires = ["hatchling"]

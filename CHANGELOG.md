@@ -2,6 +2,13 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.1.1] — 2026-10-13
+
+### Changed
+- **Open source, under the Apache License 2.0**, with a security policy, contribution
+  guide, code of conduct and issue templates. The README says what sets the kernel apart
+  and that the database is SQLite for now.
+
 ## [0.1.0] — 2026-10-13
 
 ### Added
