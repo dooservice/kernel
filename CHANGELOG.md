@@ -2,6 +2,27 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.3.0] — 2026-10-14
+
+### Added
+- `Ports.of(app)`: the ports of an application with their type, from the app or from a
+  request's `app`, so `ports.get(PlanLimits)` is a `PlanLimits` and not whatever
+  `app.state` holds.
+- `Ports.replace(kind, implementation)`: how a test stands a fake in for what the
+  application provided. Only a port that was provided can be replaced.
+- More kinds of value in `validated`, each a rule written once: `Label`, `Description`,
+  `TextLine`, `Identifier` and `OptionalIdentifier` (a UUID, kept in one spelling),
+  `Secret`, `Opaque`, `ProviderCode` (a provider's region or size), `LanguageTag`,
+  `CountryCode`, `Sha256`, `ByteCount` and `OptionalEmailAddress`. They refuse with
+  `invalid_identifier`, `invalid_option`, `invalid_language`, `invalid_country` and
+  `invalid_digest`. Plain string methods, no patterns.
+
+### Fixed
+- A module that fails to start no longer leaves the process waiting: the listeners that
+  started, the database and the boundaries are closed in reverse order and the error
+  reaches whoever started the application. Before, the database's thread kept the
+  process alive with nothing on screen.
+
 ## [0.2.1] — 2026-10-14
 
 ### Changed

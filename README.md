@@ -78,7 +78,8 @@ class BillingModule(Module):
 class ProjectsModule(Module):
     name = "projects"
     requires = (PlanLimits,)
-    # later: app.state.ports.get(PlanLimits).projects()
+    # later, typed: Ports.of(request.app).get(PlanLimits).projects()
+    # in a test:    Ports.of(app).replace(PlanLimits, FakeLimits())
 ```
 
 The kernel boots a module after every module that provides what it requires, whatever

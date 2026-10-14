@@ -13,9 +13,16 @@ providers of the same port that are not defaults are a mistake, and refused.
 
 from __future__ import annotations
 
-from typing import TypeVar, cast
+from typing import Any, Protocol, TypeVar, cast
 
 T = TypeVar("T")
+
+
+class HasState(Protocol):
+    """An application, or anything that carries one's `state`: FastAPI, Starlette."""
+
+    @property
+    def state(self) -> Any: ...
 
 
 class MissingPortError(LookupError):
@@ -52,3 +59,21 @@ class Ports:
 
     def has(self, kind: type) -> bool:
         return kind in self.found
+
+    def replace(self, kind: type[T], implementation: T) -> None:
+        """Put another implementation where one was provided: how a test stands a fake in.
+
+        Only what was provided can be replaced, so a test cannot make up a port the
+        application never offers.
+        """
+        if kind not in self.found:
+            raise MissingPortError(kind)
+        self.found[kind] = implementation
+
+    @staticmethod
+    def of(app: HasState) -> Ports:
+        """The ports of an application, with their type, from the app or a request's `app`."""
+        ports = app.state.ports
+        if not isinstance(ports, Ports):
+            raise TypeError("app.state.ports is not the kernel's Ports")
+        return ports

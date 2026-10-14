@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Mapping, Sequence
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 import logging
 
 from fastapi import FastAPI
@@ -101,22 +101,21 @@ class ApplicationBuilder:
     @asynccontextmanager
     async def lifespan(self, app: FastAPI) -> AsyncIterator[None]:
         LoggingSetup.configure(self.config.server.debug, self.config.server.log_format == "json")
-        for boundary in self.boundaries:
-            await boundary.connect()
-        if self.use_generated_schemas:
+        async with AsyncExitStack() as started:
+            for boundary in self.boundaries:
+                await boundary.connect()
+                started.push_async_callback(boundary.close)
+            if not self.use_generated_schemas:
+                await MigrationRunner(self.engine, self.profile.baseline).ensure_schema()
             await self.engine.init()
-            await self.engine.create_schemas()
-        else:
-            await MigrationRunner(self.engine, self.profile.baseline).ensure_schema()
-            await self.engine.init()
-        await self.registry.run_startup(app)
-        listeners = self.registry.listeners(app)
-        for listener in listeners:
-            await listener.start()
-        log.info("%s started with modules: %s", self.profile.title, [module.name for module in self.registry.modules])
-        yield
-        for listener in reversed(listeners):
-            await listener.stop()
-        await self.engine.close()
-        for boundary in reversed(self.boundaries):
-            await boundary.close()
+            started.push_async_callback(self.engine.close)
+            if self.use_generated_schemas:
+                await self.engine.create_schemas()
+            await self.registry.run_startup(app)
+            for listener in self.registry.listeners(app):
+                await listener.start()
+                started.push_async_callback(listener.stop)
+            log.info(
+                "%s started with modules: %s", self.profile.title, [module.name for module in self.registry.modules]
+            )
+            yield

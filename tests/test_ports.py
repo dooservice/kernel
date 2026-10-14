@@ -83,3 +83,22 @@ def test_a_default_gives_way_to_the_real_one_and_two_real_ones_are_refused() -> 
     assert ports.get(PlanLimits).projects() == 10
     with pytest.raises(PortTakenError):
         ports.provide(PlanLimits, Paid())
+
+
+def test_a_test_replaces_what_was_provided_and_nothing_else() -> None:
+    ports = Ports()
+    ports.provide(PlanLimits, Paid())
+
+    ports.replace(PlanLimits, Free())
+
+    assert ports.get(PlanLimits).projects() == 1
+    with pytest.raises(MissingPortError):
+        Ports().replace(PlanLimits, Free())
+
+
+def test_the_ports_of_an_app_come_with_their_type() -> None:
+    app = FastAPI()
+    app.state.ports = Ports()
+    app.state.ports.provide(PlanLimits, Paid())
+
+    assert Ports.of(app).get(PlanLimits).projects() == 10

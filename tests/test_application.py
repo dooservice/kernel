@@ -13,6 +13,7 @@ from dooservice_kernel.config import Config, SessionConfig
 from dooservice_kernel.errors import DomainError, UnavailableError
 from dooservice_kernel.profile import Profile
 from dooservice_kernel.registry import Module
+from dooservice_kernel.testing import FakeBoundary
 
 
 class GreetingConfig(msgspec.Struct, forbid_unknown_fields=True):
@@ -125,3 +126,26 @@ async def test_readiness_names_each_check_and_which_one_fails() -> None:
     assert ready.json()["checks"] == {"database": "ok", "ledger.balance": "ok"}
     assert failing.status_code == 503
     assert (failing.json()["code"], failing.json()["params"]) == ("not_ready", {"failing": "ledger.balance"})
+
+
+class Broken(Module):
+    name = "broken"
+
+    async def on_startup(self, app: FastAPI) -> None:
+        raise RuntimeError("cannot start")
+
+
+async def test_a_module_that_cannot_start_leaves_nothing_open() -> None:
+    """The error reaches whoever started it; the database and the boundaries are closed,
+    so the process ends instead of waiting on a connection nobody will close."""
+    queue = FakeBoundary("queue")
+    config = Config(session=SessionConfig(secret="s"))
+    config.database.url = "sqlite://:memory:"
+    builder = ApplicationBuilder(config, [Broken()], boundaries=[queue], use_generated_schemas=True)
+    app = builder.build()
+
+    with pytest.raises(RuntimeError, match="cannot start"):
+        async with builder.lifespan(app):
+            pass
+
+    assert not queue.connected
