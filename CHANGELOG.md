@@ -2,6 +2,13 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.3.1] — 2026-10-14
+
+### Changed
+- No module-level functions left but the `kernel_harness` fixture, which pytest only finds
+  as one: `KernelDependencies.provide_config` (and its siblings) and
+  `ClientAddress.client_address`. The `Annotated` aliases (`AppConfig`, …) are unchanged.
+
 ## [0.3.0] — 2026-10-14
 
 ### Added

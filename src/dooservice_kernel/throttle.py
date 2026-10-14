@@ -44,8 +44,12 @@ class Throttle:
         self.hits = {key: moments for key, moments in self.hits.items() if moments and moments[-1] >= cutoff}
 
 
-def client_address(request: Request) -> str:
-    """The address a request came from. Behind the proxy, the one it put first in
-    `X-Forwarded-For`; the proxy replaces whatever the client sent there."""
-    forwarded = request.headers.get("x-forwarded-for", "")
-    return forwarded.split(",")[0].strip() or (request.client.host if request.client else "")
+class ClientAddress:
+    """Who is asking, as far as a throttle can tell."""
+
+    @staticmethod
+    def client_address(request: Request) -> str:
+        """The address a request came from. Behind the proxy, the one it put first in
+        `X-Forwarded-For`; the proxy replaces whatever the client sent there."""
+        forwarded = request.headers.get("x-forwarded-for", "")
+        return forwarded.split(",")[0].strip() or (request.client.host if request.client else "")
