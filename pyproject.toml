@@ -1,6 +1,6 @@
 [project]
 name = "dooservice-kernel"
-version = "0.3.1"
+version = "0.4.0"
 description = "A kernel for modular FastAPI services: modules, their configuration, events, database and migrations"
 requires-python = ">=3.13"
 license = "Apache-2.0"
