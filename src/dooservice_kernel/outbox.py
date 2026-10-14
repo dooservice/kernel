@@ -35,7 +35,7 @@ class OutboxModel(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     delivered_at = fields.DatetimeField(null=True, db_index=True)
 
-    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
+    class Meta(Model.Meta):
         table = TABLE
 
 

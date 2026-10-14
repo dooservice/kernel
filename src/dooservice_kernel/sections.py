@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Literal
+
 import msgspec
 
 
@@ -12,11 +14,7 @@ class ServerConfig(msgspec.Struct, forbid_unknown_fields=True):
     frontend_url: str = "http://localhost:5173"
     debug: bool = False
     allow_signups: bool = True
-    log_format: str = "text"
-
-    def __post_init__(self) -> None:
-        if self.log_format not in ("text", "json"):
-            raise ValueError(f"[server] log_format is text or json, not {self.log_format!r}")
+    log_format: Literal["text", "json"] = "text"
 
 
 class DatabaseConfig(msgspec.Struct, forbid_unknown_fields=True):
@@ -27,7 +25,7 @@ class SessionConfig(msgspec.Struct, forbid_unknown_fields=True):
     secret: str
     ttl_seconds: int = 86400 * 30
     cookie_secure: bool = False
-    cookie_samesite: str = "lax"
+    cookie_samesite: Literal["lax", "strict", "none"] = "lax"
 
 
 class CorsConfig(msgspec.Struct, forbid_unknown_fields=True):

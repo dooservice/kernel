@@ -101,7 +101,8 @@ ignore = [
     "TC002",   # move third-party imports into TYPE_CHECKING
     "TC003",   # move stdlib imports into TYPE_CHECKING
 
-    # Security — false positives
+    # Security — false positives: names like TOKEN or PASSWORD_RESET are labels, not secrets
+    "S105",    # hardcoded password string
     "S106",    # hardcoded password (CLI defaults like "odoo")
     "S107",    # hardcoded password in function arg
     "S108",    # /tmp usage (tests and temp files)
@@ -121,58 +122,15 @@ unfixable = [
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [lint.per-file-ignores]
-"**/proxy/labels.py" = [
-    "E501",  # Traefik label keys cannot be shortened
-]
-"**/dooservice_transport/**" = [
-    "E501",  # NATS publish lines encode full payloads inline — splitting them adds no clarity
-]
 "tests/*" = [
     "S101",    # assert in tests
     "PLR2004", # magic values in tests
-]
-"**/commands/*.py" = [
-    "PLR0915", # CLI commands can be long
-]
-"**/dooservice_api/config/settings.py" = [
-    "E501",  # long lines in env-driven settings are fine
-    "S105",  # hardcoded fallback secret for DEBUG mode
-]
-"**/dooservice_api/**/migrations/*.py" = [
-    "E501",
-    "I001",
-    "RUF012",
-]
-"**/dooservice_api/**/views.py" = [
-    "RUF012",  # DRF APIView/ViewSet idiom: mutable class attrs are the expected API
-]
-"**/dooservice_api/**/serializers.py" = [
-    "RUF012",  # DRF Meta.fields / nested serializer lists
-]
-"**/dooservice_api/**/models.py" = [
-    "RUF012",  # Django Meta lists/dicts are declarative
-]
-"**/dooservice_api/manage.py" = [
-    "PLC0415",  # Django management script imports lazily by design
-]
-"**/dooservice_api/worker_*.py" = [
-    "PLC0415",  # Temporal workers import after Django setup
 ]
 
 [lint.isort]
 combine-as-imports = true
 force-sort-within-sections = true
-known-first-party = [
-    "dooservice_agent",
-    "dooservice_db_agent",
-    "dooservice_dns",
-    "dooservice_docker",
-    "dooservice_models",
-    "dooservice_orchestrator",
-    "dooservice_protocol",
-    "dooservice_s3",
-    "dooservice_sdk",
-]
+known-first-party = ["dooservice_kernel"]
 
 [lint.pylint]
 max-args = 8

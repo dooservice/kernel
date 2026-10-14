@@ -2,6 +2,18 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.2.1] — 2026-10-14
+
+### Changed
+- `[session] cookie_samesite` is `lax`, `strict` or `none`, and `[server] log_format` is
+  `text` or `json`, checked when the configuration is read: an application passes them on
+  with their type instead of a string anything could be.
+- `make check` runs lint, formatting, types and tests over `src` and `tests`, and CI runs
+  exactly that.
+
+### Fixed
+- The outbox model's `Meta` extends `Model.Meta` instead of silencing the type checker.
+
 ## [0.2.0] — 2026-10-13
 
 ### Added

@@ -34,7 +34,6 @@ class Rules:
             Rules.dns_label(label)
         return value
 
-
     @staticmethod
     def email(value: str) -> str:
         try:

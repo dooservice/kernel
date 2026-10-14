@@ -10,7 +10,11 @@ def test_the_environment_overrides_values_and_reads_them_as_toml() -> None:
 
     data = EnvironmentOverrides("SHOP", environ).apply({"server": {"host": "0.0.0.0"}})
 
-    assert data == {"server": {"host": "0.0.0.0", "port": 8080}, "shop": {"currency": "PEN"}, "cors": {"origins": ["https://a.b"]}}
+    assert data == {
+        "server": {"host": "0.0.0.0", "port": 8080},
+        "shop": {"currency": "PEN"},
+        "cors": {"origins": ["https://a.b"]},
+    }
 
 
 def test_a_secret_is_read_from_a_file(tmp_path: Path) -> None:

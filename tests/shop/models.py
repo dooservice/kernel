@@ -7,5 +7,5 @@ class NoteModel(Model):
     text = fields.CharField(max_length=200)
     pinned = fields.BooleanField(default=False, db_default=False)
 
-    class Meta:
+    class Meta(Model.Meta):
         table = "notes"

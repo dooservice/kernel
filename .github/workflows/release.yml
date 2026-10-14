@@ -39,14 +39,8 @@ jobs:
       - name: Install dependencies
         run: uv sync --frozen --all-extras
 
-      - name: Lint
-        run: uv run ruff check src tests
-
-      - name: Types
-        run: uv run basedpyright src
-
-      - name: Tests
-        run: uv run pytest -q
+      - name: Lint, format, types and tests
+        run: make check
 
   release:
     name: Create GitHub Release

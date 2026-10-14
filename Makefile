@@ -1,4 +1,4 @@
-.PHONY: help install lint test typecheck check bump
+.PHONY: help install lint format format-check test typecheck check bump
 
 GREEN := \033[0;32m
 RED   := \033[0;31m
@@ -13,13 +13,19 @@ install: ## Install the package and its dev tools
 lint: ## Ruff
 	uv run ruff check src tests
 
+format: ## Format the code
+	uv run ruff format src tests
+
+format-check: ## Formatting, without changing anything
+	uv run ruff format --check src tests
+
 typecheck: ## basedpyright
-	uv run basedpyright src
+	uv run basedpyright src tests
 
 test: ## pytest
 	uv run pytest -q
 
-check: lint typecheck test ## Everything the release runs
+check: lint format-check typecheck test ## Everything CI runs before a release
 
 bump: check ## Release a version: make bump VERSION=0.2.0
 	@[ "$(VERSION)" != "" ] || { echo "$(RED)Set VERSION: make bump VERSION=0.2.0$(NC)"; exit 1; }

@@ -17,7 +17,7 @@ class ShopConfig(msgspec.Struct, forbid_unknown_fields=True):
 def test_the_kernel_reads_its_sections_and_each_module_its_own() -> None:
     config = Config.read({"session": {"secret": "s"}, "shop": {"currency": "PEN"}}, [ShopConfig])
 
-    assert config.session.secret == "s"  # noqa: S105
+    assert config.session.secret == "s"
     assert config.server.port == 3000
     assert config.section(ShopConfig).currency == "PEN"
 

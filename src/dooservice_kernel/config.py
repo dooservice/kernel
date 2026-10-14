@@ -88,5 +88,11 @@ class Config:
 
 
 __all__ = [
-    "Config", "CorsConfig", "DatabaseConfig", "ModulesConfig", "ServerConfig", "SessionConfig", "UnknownSectionsError",
+    "Config",
+    "CorsConfig",
+    "DatabaseConfig",
+    "ModulesConfig",
+    "ServerConfig",
+    "SessionConfig",
+    "UnknownSectionsError",
 ]

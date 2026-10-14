@@ -64,8 +64,13 @@ class KernelHarness:
         self.config = Config(session=SessionConfig(secret="test"), sections=sections)
         self.config.database.url = "sqlite://:memory:"
         self.builder = ApplicationBuilder(
-            self.config, modules, profile=profile, boundaries=boundaries, state=state,
-            use_generated_schemas=True, extensions=extensions,
+            self.config,
+            modules,
+            profile=profile,
+            boundaries=boundaries,
+            state=state,
+            use_generated_schemas=True,
+            extensions=extensions,
         )
         self.app: FastAPI = self.builder.build()
         self.client = AsyncClient(transport=ASGITransport(app=self.app), base_url="http://test")

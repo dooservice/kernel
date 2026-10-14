@@ -63,8 +63,12 @@ async def running() -> AsyncIterator[tuple[FastAPI, Queue]]:
     config = Config(session=SessionConfig(secret="s"))
     config.database.url = "sqlite://:memory:"
     builder = ApplicationBuilder(
-        config, [Greeter()], profile=Profile(title="shop", api_prefix="/api/v1"),
-        boundaries=[queue], state={"clock": "utc"}, use_generated_schemas=True,
+        config,
+        [Greeter()],
+        profile=Profile(title="shop", api_prefix="/api/v1"),
+        boundaries=[queue],
+        state={"clock": "utc"},
+        use_generated_schemas=True,
     )
     app = builder.build()
     async with builder.lifespan(app):

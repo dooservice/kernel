@@ -29,6 +29,4 @@ jobs:
           version: "latest"
       - run: uv python install 3.13
       - run: uv sync --frozen --all-extras
-      - run: uv run ruff check src tests
-      - run: uv run basedpyright src
-      - run: uv run pytest -q
+      - run: make check

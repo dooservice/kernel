@@ -94,7 +94,5 @@ class ModuleRegistry:
     def health_checks(self) -> dict[str, Callable[[], Awaitable[bool]]]:
         """Every module's checks, named `<module>.<check>`."""
         return {
-            f"{module.name}.{name}": check
-            for module in self.modules
-            for name, check in module.health_checks().items()
+            f"{module.name}.{name}": check for module in self.modules for name, check in module.health_checks().items()
         }

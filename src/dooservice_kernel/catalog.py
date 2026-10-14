@@ -7,13 +7,9 @@ from tortoise.backends.base.client import BaseDBAsyncClient
 QUESTIONS = {
     "sqlite": "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
     "postgres": (
-        "SELECT table_name FROM information_schema.tables "
-        "WHERE table_schema = current_schema() AND table_name = $1"
+        "SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = $1"
     ),
-    "mysql": (
-        "SELECT table_name FROM information_schema.tables "
-        "WHERE table_schema = DATABASE() AND table_name = %s"
-    ),
+    "mysql": ("SELECT table_name FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = %s"),
 }
 
 
