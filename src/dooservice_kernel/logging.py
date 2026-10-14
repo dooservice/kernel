@@ -7,9 +7,8 @@ from datetime import UTC, datetime
 import json
 import logging
 
+from .constants import LOG_FORMAT
 from .http import job_id_var, request_id_var
-
-LOG_FORMAT = "%(asctime)s %(levelname)s %(name)s [%(request_id)s] %(message)s"
 
 
 class ContextInjectionFilter(logging.Filter):

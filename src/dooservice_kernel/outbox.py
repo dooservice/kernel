@@ -19,13 +19,10 @@ from tortoise import fields
 from tortoise.migrations import operations as ops
 from tortoise.models import Model
 
+from .constants import BATCH, RELAY_EVERY_SECONDS, TABLE
 from .events import Events
 from .periodic import Periodic
 from .registry import Listener, Module
-
-TABLE = "kernel_outbox"
-RELAY_EVERY_SECONDS = 1.0
-BATCH = 100
 
 
 class OutboxModel(Model):

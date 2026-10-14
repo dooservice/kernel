@@ -5,16 +5,13 @@ Plain string methods, no patterns: a rule somebody can read is a rule somebody c
 
 from __future__ import annotations
 
-from string import ascii_letters, ascii_lowercase, digits
 import uuid
 from zoneinfo import available_timezones
 
 from email_validator import EmailNotValidError, validate_email
 from pydantic_core import PydanticCustomError
 
-LABEL_CHARACTERS = frozenset(ascii_lowercase + digits + "-")
-CODE_CHARACTERS = frozenset(ascii_letters + digits + "-_.")
-HEX_CHARACTERS = frozenset(digits + "abcdef")
+from .constants import CODE_CHARACTERS, HEX_CHARACTERS, LABEL_CHARACTERS
 
 
 class Rules:

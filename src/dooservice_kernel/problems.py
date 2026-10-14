@@ -6,12 +6,11 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from .constants import PROBLEM_CONTENT_TYPE
 from .errors import DomainError
 from .http import FieldProblem, ProblemDetails, request_id_var
 
 log = logging.getLogger(__name__)
-
-PROBLEM_CONTENT_TYPE = "application/problem+json"
 
 
 class ProblemRenderer:

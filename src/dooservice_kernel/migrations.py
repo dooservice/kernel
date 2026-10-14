@@ -7,11 +7,10 @@ from tortoise import Tortoise, connections
 from tortoise.migrations.api.migrate import migrate
 
 from .catalog import TableCatalog
-from .db import APP_LABEL, DatabaseEngine
+from .constants import APP_LABEL, MIGRATIONS_TABLE
+from .db import DatabaseEngine
 
 log = logging.getLogger(__name__)
-
-MIGRATIONS_TABLE = "tortoise_migrations"
 
 
 class Baseline(msgspec.Struct, frozen=True):

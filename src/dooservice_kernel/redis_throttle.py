@@ -12,9 +12,8 @@ import uuid
 
 from redis.asyncio import Redis
 
+from .constants import PREFIX
 from .throttle import TooManyAttemptsError
-
-PREFIX = "dooservice_kernel:throttle:"
 
 
 class RedisThrottle:

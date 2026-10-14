@@ -4,7 +4,7 @@ from collections.abc import Sequence
 
 from tortoise import Tortoise
 
-APP_LABEL = "models"
+from .constants import APP_LABEL
 
 
 class DatabaseEngine:

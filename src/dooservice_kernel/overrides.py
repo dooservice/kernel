@@ -19,8 +19,7 @@ from pathlib import Path
 import tomllib
 from typing import Any
 
-SEPARATOR = "__"
-FROM_FILE = "file"
+from .constants import FROM_FILE, SEPARATOR
 
 
 class EnvironmentOverrides:

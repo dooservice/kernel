@@ -20,9 +20,8 @@ import uuid
 import msgspec
 from redis.asyncio import Redis
 
+from .constants import CHANNEL
 from .errors import DomainError, UnavailableError
-
-CHANNEL = "dooservice_kernel.events"
 
 log = logging.getLogger(__name__)
 

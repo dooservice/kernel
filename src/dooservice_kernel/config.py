@@ -16,13 +16,9 @@ from typing import Any, TypeVar
 
 import msgspec
 
+from .constants import CONFIG_ENV_VAR, DEFAULT_CONFIG_PATH, KERNEL_SECTIONS
 from .overrides import EnvironmentOverrides
 from .sections import CorsConfig, DatabaseConfig, KernelSections, ModulesConfig, ServerConfig, SessionConfig
-
-DEFAULT_CONFIG_PATH = Path("data/config.toml")
-CONFIG_ENV_VAR = "APP_CONFIG"
-KERNEL_SECTIONS = frozenset({"server", "database", "session", "cors", "modules"})
-
 
 S = TypeVar("S")
 

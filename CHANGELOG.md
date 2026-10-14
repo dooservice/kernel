@@ -2,6 +2,13 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.4.0] — 2026-10-15
+
+### Changed
+- Every constant of the kernel lives in `dooservice_kernel.constants`, instead of at the top
+  of the module that used it: `DEFAULT_CONFIG_PATH`, `CONFIG_ENV_VAR`, `MIGRATIONS_TABLE`,
+  `PROBLEM_CONTENT_TYPE` and the rest are imported from there now.
+
 ## [0.3.1] — 2026-10-14
 
 ### Changed

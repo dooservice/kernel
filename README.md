@@ -40,19 +40,19 @@ kernel never imports a module, and a module never wires itself in.
 ```python
 class Module:
     name: str
-    routers: Sequence[APIRouter]            # mounted under the profile's prefix
-    root_routers: Sequence[APIRouter]       # mounted at the root: webhooks
-    orm_model_modules: Sequence[str]        # the Tortoise models it owns
-    config_sections: Sequence[type]         # the configuration it reads
+    routers: Sequence[APIRouter]  # mounted under the profile's prefix
+    root_routers: Sequence[APIRouter]  # mounted at the root: webhooks
+    orm_model_modules: Sequence[str]  # the Tortoise models it owns
+    config_sections: Sequence[type]  # the configuration it reads
 
-    provides: Sequence[type]                # the ports it offers others
-    requires: Sequence[type]                # the ports it needs
+    provides: Sequence[type]  # the ports it offers others
+    requires: Sequence[type]  # the ports it needs
 
-    def listeners(self, app) -> Sequence[Listener]: ...      # background work: start() / stop()
-    async def on_startup(self, app) -> None: ...             # register the ports it provides
-    def subscriptions(self) -> Mapping[type, Handler]: ...   # the events it acts on
-    def health_checks(self) -> Mapping[str, Check]: ...      # what /health/ready asks of it
-    def commands(self) -> Sequence[Callable]: ...            # its commands on the command line
+    def listeners(self, app) -> Sequence[Listener]: ...  # background work: start() / stop()
+    async def on_startup(self, app) -> None: ...  # register the ports it provides
+    def subscriptions(self) -> Mapping[type, Handler]: ...  # the events it acts on
+    def health_checks(self) -> Mapping[str, Check]: ...  # what /health/ready asks of it
+    def commands(self) -> Sequence[Callable]: ...  # its commands on the command line
 ```
 
 Two applications built from the same modules never share a router.
@@ -114,7 +114,7 @@ declares it:
 
 ```python
 class ShopConfig(msgspec.Struct, forbid_unknown_fields=True):
-    section: ClassVar[str] = "shop"      # its table in the file
+    section: ClassVar[str] = "shop"  # its table in the file
 
     currency: str = "USD"
     tax_rate: float = 0.18
@@ -201,7 +201,7 @@ class Boundary(Protocol):
     async def connect(self) -> None: ...
     async def close(self) -> None: ...
     def ready(self) -> bool: ...
-    def unavailable(self) -> DomainError: ...   # what /health/ready answers while it is down
+    def unavailable(self) -> DomainError: ...  # what /health/ready answers while it is down
 ```
 
 The kernel opens every boundary before the database and closes it after, and
@@ -237,7 +237,7 @@ def listeners(self, app):
 
 ```python
 command_line = CommandLine("shop", modules, load_config)
-command_line()            # shop check-config · shop ledger rebuild --since 2026-01-01
+command_line()  # shop check-config · shop ledger rebuild --since 2026-01-01
 ```
 
 Each module's `commands()` go under its name, and `check-config` reads the configuration
@@ -366,9 +366,9 @@ builder = ApplicationBuilder(
     [ShopModule(), LedgerModule()],
     profile=Profile(title="shop", api_prefix="/api/v1", migrations="shop.migrations"),
     boundaries=[queue],
-    state={"queue": queue},          # what modules find on app.state
+    state={"queue": queue},  # what modules find on app.state
 )
-app = builder.build()                # serve it with uvicorn
+app = builder.build()  # serve it with uvicorn
 ```
 
 `app.state` also carries `config`, `registry`, `events`, `cookie_signer` and

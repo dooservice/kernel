@@ -16,10 +16,9 @@ from __future__ import annotations
 from collections.abc import Sequence
 from importlib.metadata import entry_points
 
+from .constants import ENTRY_POINTS
 from .registry import Module
 from .sections import ModulesConfig
-
-ENTRY_POINTS = "dooservice_kernel.modules"
 
 
 class UnknownModulesError(ValueError):
