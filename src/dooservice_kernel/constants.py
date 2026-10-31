@@ -22,6 +22,8 @@ CONFIG_ENV_VAR = "APP_CONFIG"
 KERNEL_SECTIONS = frozenset({"server", "database", "session", "cors", "modules"})
 
 APP_LABEL = "models"
+#: The pragmas a SQLite connection runs with when its URL names none of its own.
+SQLITE_PRAGMAS = {"synchronous": "NORMAL", "busy_timeout": "5000"}
 
 ENTRY_POINTS = "dooservice_kernel.modules"
 

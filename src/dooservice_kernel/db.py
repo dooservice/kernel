@@ -1,10 +1,28 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from tortoise import Tortoise
 
-from .constants import APP_LABEL
+from .constants import APP_LABEL, SQLITE_PRAGMAS
+
+
+class SqlitePragmas:
+    """What every SQLite connection runs with, unless the URL says otherwise.
+
+    WAL with `synchronous=NORMAL` commits without an fsync each time: a power cut can lose
+    the last transactions, never corrupt the file, and a commit costs a twentieth. A
+    `busy_timeout` makes a writer wait for another instead of failing at once.
+    """
+
+    @staticmethod
+    def applied(url: str) -> str:
+        if not url.startswith("sqlite") or ":memory:" in url:
+            return url
+        parts = urlsplit(url)
+        given = dict(parse_qsl(parts.query))
+        return urlunsplit(parts._replace(query=urlencode({**SQLITE_PRAGMAS, **given})))
 
 
 class DatabaseEngine:
@@ -18,7 +36,7 @@ class DatabaseEngine:
 
     def tortoise_config(self) -> dict:
         return {
-            "connections": {"default": self.url},
+            "connections": {"default": SqlitePragmas.applied(self.url)},
             "apps": {
                 APP_LABEL: {
                     "models": self.model_modules or [self.__module__],
