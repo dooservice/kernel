@@ -2,6 +2,17 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.5.0] — 2026-10-31
+
+### Changed
+- SQLite connections run with `synchronous=NORMAL` and `busy_timeout=5000` unless the URL
+  names its own: WAL commits stop paying an fsync each (about twenty times cheaper), and a
+  writer waits for another instead of failing at once.
+
+### Fixed
+- `Password` and `GivenPassword` are at most the 72 bytes bcrypt reads; a longer one is a
+  `string_too_long` field problem instead of a 500.
+
 ## [0.4.0] — 2026-10-15
 
 ### Changed
