@@ -5,7 +5,7 @@
 Do not open a public issue. Report it privately through GitHub:
 [**Report a vulnerability**](https://github.com/dooservice/kernel/security/advisories/new),
 in the *Security* tab of this repository, or by email to
-[soporte@apiservicesac.com](mailto:soporte@apiservicesac.com) with «Security» in the
+[security@dooservice.sh](mailto:security@dooservice.sh) with «Security» in the
 subject.
 
 Include the version, what an attacker can do and from where, and how to reproduce it.
