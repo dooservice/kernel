@@ -19,8 +19,8 @@ Lowered = StringConstraints(strip_whitespace=True, to_lower=True)
 
 EmailAddress = Annotated[str, Trimmed, Field(max_length=254), AfterValidator(Rules.email)]
 DisplayName = Annotated[str, Trimmed, Field(min_length=2, max_length=80)]
-Password = Annotated[str, Field(min_length=8, max_length=128)]
-GivenPassword = Annotated[str, Field(min_length=1, max_length=128)]
+Password = Annotated[str, Field(min_length=8, max_length=72), AfterValidator(Rules.password_bytes)]
+GivenPassword = Annotated[str, Field(min_length=1, max_length=72), AfterValidator(Rules.password_bytes)]
 OtpCode = Annotated[str, Trimmed, Field(min_length=6, max_length=6), AfterValidator(Rules.digits)]
 LanguageCode = Annotated[str, Field(min_length=2, max_length=2)]
 OptionalLanguageCode = Annotated[str, Field(max_length=2)]

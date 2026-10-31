@@ -11,7 +11,7 @@ from zoneinfo import available_timezones
 from email_validator import EmailNotValidError, validate_email
 from pydantic_core import PydanticCustomError
 
-from .constants import CODE_CHARACTERS, HEX_CHARACTERS, LABEL_CHARACTERS
+from .constants import BCRYPT_MAX_BYTES, CODE_CHARACTERS, HEX_CHARACTERS, LABEL_CHARACTERS
 
 
 class Rules:
@@ -40,6 +40,14 @@ class Rules:
             return validate_email(value, check_deliverability=False).normalized.lower()
         except EmailNotValidError as invalid:
             raise PydanticCustomError("invalid_email", "not an email address") from invalid
+
+    @staticmethod
+    def password_bytes(value: str) -> str:
+        """No longer than bcrypt reads: past 72 bytes it refuses the password outright, and
+        a long password in a script with multi-byte letters reaches that within 128 characters."""
+        if len(value.encode()) > BCRYPT_MAX_BYTES:
+            raise PydanticCustomError("string_too_long", "at most 72 bytes")
+        return value
 
     @staticmethod
     def time_zone(value: str) -> str:

@@ -6,6 +6,8 @@ from string import ascii_letters, ascii_lowercase, digits
 REQUEST_ID_HEADER = "X-Request-Id"
 OAUTH_STATE_TTL_SECONDS = 600
 OTP_DIGITS = 6
+#: The most of a password bcrypt reads; it refuses a longer one.
+BCRYPT_MAX_BYTES = 72
 
 QUESTIONS = {
     "sqlite": "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",

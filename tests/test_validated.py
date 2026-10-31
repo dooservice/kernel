@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 import pytest
 
 from dooservice_kernel.validated import (
@@ -10,6 +10,7 @@ from dooservice_kernel.validated import (
     EmailAddress,
     Identifier,
     LanguageTag,
+    Password,
     ProviderCode,
     Sha256,
     TimeZoneName,
@@ -76,3 +77,10 @@ def test_a_value_of_the_new_kinds_is_refused_with_its_code(values: dict, code: s
     with pytest.raises(ValidationError) as refused:
         Request(**values)
     assert refused.value.errors()[0]["type"] == code
+
+
+def test_a_password_bcrypt_cannot_read_whole_is_refused_by_its_length_in_bytes() -> None:
+    """bcrypt refuses more than 72 bytes outright; 40 letters of a multi-byte script are more."""
+    with pytest.raises(ValidationError, match="string_too_long"):
+        TypeAdapter(Password).validate_python("ñ" * 40)
+    assert TypeAdapter(Password).validate_python("a" * 72) == "a" * 72
