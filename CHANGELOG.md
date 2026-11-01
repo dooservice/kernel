@@ -2,6 +2,11 @@
 
 All notable changes to `dooservice-kernel` are documented here.
 
+## [0.5.1] — 2026-11-01
+
+### Fixed
+- `LanguageTag` accepts a region of three digits (UN M.49), as BCP 47 allows: `ar_001`, the Arabic Odoo offers, was refused.
+
 ## [0.5.0] — 2026-10-31
 
 ### Changed

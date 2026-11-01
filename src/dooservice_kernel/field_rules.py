@@ -84,17 +84,24 @@ class Rules:
 
     @staticmethod
     def language_tag(value: str) -> str:
-        """`es`, `pt`, `es-PE` or `pt_BR`; empty means the default."""
+        """`es`, `pt`, `es-PE`, `pt_BR` or `ar_001` (a UN M.49 area); empty means the default."""
         language, _, region = value.replace("_", "-").partition("-")
         if value and not (
             2 <= len(language) <= 3
             and language.isascii()
             and language.isalpha()
             and language.islower()
-            and (not region or (len(region) == 2 and region.isascii() and region.isalpha()))
+            and (not region or Rules.region(region))
         ):
             raise PydanticCustomError("invalid_language", "not a language")
         return value
+
+    @staticmethod
+    def region(value: str) -> bool:
+        """Two letters (ISO 3166) or three digits (UN M.49), as BCP 47 allows."""
+        if not value.isascii():
+            return False
+        return (len(value) == 2 and value.isalpha()) or (len(value) == 3 and value.isdigit())
 
     @staticmethod
     def country(value: str) -> str:

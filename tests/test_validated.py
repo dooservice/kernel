@@ -60,6 +60,7 @@ def test_what_comes_in_is_written_the_one_way_it_is_kept() -> None:
     assert received.country == "PE"
     assert received.sha256 == "a" * 64
     assert Request(language="pt_BR").language == "pt_BR"
+    assert Request(language="ar_001").language == "ar_001"
 
 
 @pytest.mark.parametrize(
@@ -69,6 +70,7 @@ def test_what_comes_in_is_written_the_one_way_it_is_kept() -> None:
         ({"region": "fsn 1"}, "invalid_option"),
         ({"language": "Spanish"}, "invalid_language"),
         ({"language": "es-PER"}, "invalid_language"),
+        ({"language": "ar_01"}, "invalid_language"),
         ({"country": "PER"}, "invalid_country"),
         ({"sha256": "xyz"}, "invalid_digest"),
     ],
